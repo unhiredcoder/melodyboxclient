@@ -171,13 +171,14 @@
   .text {
     color: #ffffff;
     display: block;
+    user-select: none;
     font-size: 10px;
   }
 
   .text1 {
     font-weight: 900;
     letter-spacing: 2px;
-    /* color: #ffffff; */
+    user-select: none;
     -webkit-text-stroke: .2px;
     -webkit-text-stroke-color: #00ff00;
     margin-bottom: -10px;
@@ -380,7 +381,7 @@
 
 
 
-  fetch('http://localhost:4000/list')
+  fetch('https://melodybox2.vercel.app/list')
     .then(function (response) {
       return response.json();
     })
@@ -425,7 +426,7 @@
       playlist.splice(index, 1);
       item.parentElement.remove();
 
-      fetch(`http://localhost:4000/del2/${fileId}`, {
+      fetch(`https://melodybox2.vercel.app/del2/${fileId}`, {
         method: 'DELETE'
       })
         .then(response => {
@@ -448,7 +449,7 @@
     playlist.push(...playlist, sourceUrl)
     console.log(sourceUrl);
     const data = { link: sourceUrl };
-    fetch('http://localhost:4000/song', {
+    fetch('https://melodybox2.vercel.app/song', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -506,7 +507,7 @@
         item.parentElement.remove();
 
         // Make a DELETE request to the API to delete the item from the database
-        fetch(`http://localhost:4000/del1/${fileId}`, {
+        fetch(`https://melodybox2.vercel.app/del1/${fileId}`, {
           method: 'DELETE'
         })
           .then(response => {
