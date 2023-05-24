@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+  <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+</head>
+<style>
+  * {
+    box-sizing: border-box;
+  }
+
+  html {
+    background: #000000;
+    scroll-behavior: smooth;
+  }
+
+  html,
+  body,
+  .container {
+    height: 100%;
+    margin: 0;
+    font-family: Arial, Helvetica, sans-serif;
+  }
+
+  #stop {
+    color: red;
+  }
+
+  .container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .glow {
+    position: absolute;
+    width: 300px;
+    height: 300px;
+    background: linear-gradient(0deg, #000000, #262626);
+    border-radius: 50%;
+  }
+
+  .glow::before,
+  .glow::after {
+    content: "";
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    background: linear-gradient(45deg,
+        #ff00ee,
+        #0000ff,
+        #00ff00,
+        #ff0000,
+        #ff00ee,
+        #0000ff,
+        #00ff00,
+        #ffff00,
+        #ff0000);
+    background-size: 400%;
+    max-width: calc(300px + 4px);
+    max-height: calc(300px + 4px);
+    width: calc(300px + 4px);
+    height: calc(300px + 4px);
+    z-index: -1;
+    animation: animate 20s linear infinite;
+    border-radius: 50%;
+  }
+
+  .disable-animation::before,
+  .disable-animation::after {
+    animation-play-state: paused;
+  }
+
+  .glow::after {
+    filter: blur(28px);
+  }
+
+  #player,
+  #playlist {
+    width: 243px;
+    height: 212px;
+    text-align: center;
+    position: relative;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+
+  }
+
+  #songName {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding: 0 30px;
+  }
+
+  .playlist-btn {
+    width: 243px;
+    margin-top: 30px;
+    text-align: center;
+    position: relative;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .hide {
+    display: none;
+  }
+
+  #list {
+    height: 118px;
+    max-height: 118px;
+    margin-top: 16px;
+    font-size: 12px;
+    overflow-x: hidden;
+    overflow-y: scroll;
+    color: #fff;
+    text-align: left;
+    padding-left: 8px;
+    border: 2px solid #262626;
+    border-radius: 5px;
+  }
+
+  .list-item {
+    line-height: 30px;
+    height: 30px;
+    margin-top: 4px;
+  }
+
+
+  .list-container button {
+    width: 30px;
+    padding: 0;
+    float: right;
+    margin-right: 4px;
+  }
+
+  .add-list {
+    padding: 4px 6px;
+  }
+
+  .wrap-text {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 190px;
+    display: inline-block;
+  }
+
+  #sourceUrl {
+    background: none;
+    padding: 8px;
+    border: 2px solid #1f1f1f;
+    border-radius: 47px;
+    outline: none;
+    color: white;
+    height: 30px;
+    width: 192px;
+  }
+
+  #sourceUrl:active,
+  #sourceUrl:focus {
+    border: 2px solid #0088ff;
+  }
+
+  .text {
+    color: #ffffff;
+    display: block;
+    font-size: 10px;
+  }
+
+  .text1 {
+    font-weight: 900;
+    letter-spacing: 2px;
+    /* color: #ffffff; */
+    -webkit-text-stroke: .2px;
+    -webkit-text-stroke-color: #00ff00;
+    margin-bottom: -10px;
+    font-size: 22px;
+    display: block;
+  }
+
+  button {
+    background: #000000;
+    color: #ffffff;
+    background: linear-gradient(0deg, #000000, #262626);
+    font-size: 14px;
+    border: none;
+    outline: none;
+    padding: 0px 15px;
+    width: 55px;
+    height: 30px;
+    line-height: 30px;
+    border-radius: 32px;
+  }
+
+  button:hover {
+    box-shadow: 0 0 8px 0px #ffffff61;
+  }
+
+  button:active {
+    box-shadow: inset 0 0 6px 0px #ffffff61;
+  }
+
+  #seek,
+  #volume {
+    -webkit-appearance: none;
+    border: 1px solid #000000;
+    height: 5px;
+    vertical-align: middle;
+    border-radius: 20px;
+    background-color: #232323;
+    outline: none;
+  }
+
+  #seek::-webkit-slider-thumb,
+  #volume::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 13px;
+    height: 13px;
+    border: 1px solid #000000;
+    border-radius: 10px;
+    background: #ffffff;
+  }
+
+  #seek {
+    display: block;
+    width: 230px;
+  }
+
+  .scrollbar::-webkit-scrollbar {
+    max-width: 5px;
+    max-height: 5px;
+  }
+
+  .scrollbar::-webkit-scrollbar-thumb {
+    border-radius: 10px;
+    background: #333;
+  }
+
+  .scrollbar::-webkit-scrollbar-thumb:hover {
+    box-shadow: inset 0 0 1px 1px #5c6670;
+  }
+
+  .scrollbar::-webkit-scrollbar-track:hover {
+    border: 1px solid #000000;
+    border-radius: 20px;
+    background-color: #232323;
+  }
+
+  @keyframes animate {
+    0% {
+      background-position: 0 0;
+    }
+
+    50% {
+      background-position: 400% 0;
+    }
+
+    100% {
+      background-position: 0 0;
+    }
+  }
+
+  .m {
+    vertical-align: middle;
+    height: 30px;
+    width: 100px;
+    background-image: url(./animation.43a00529.svg);
+    background-repeat: repeat;
+    background-position: center;
+    background-size: 20% 100%;
+    z-index: 9999999;
+  }
+
+  .volume_controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-evenly;
+  }
+
+  #mute {
+    color: white;
+  }
+
+  #duration {
+    float: right;
+    color: white;
+    font-size: 5px;
+    height: 5px;
+    text-align: center;
+    display: grid;
+    place-content: center;
+  }
+</style>
+
+<body>
+  <div class="container">
+    <div id="glow" class="glow disable-animation">
+      <div id="player">
+        <span class="text1">MelodyBox</span>
+        <br>
+        <span id="songName" class="text">Get ready to rock !🎧
+        </span>
+        <br>
+        <div class="playback_controls">
+          <button onclick="skip('prev')">
+            <i class="fa fa-fast-backward"></i>
+          </button>
+          <button id="po" onclick="playpause()">
+            <i class="fa fa-play"></i>
+          </button>
+          <button onclick="stop()">
+            <i id="stop" class="fa fa-stop"></i>
+          </button>
+          <button onclick="skip('next')">
+            <i class="fa fa-fast-forward"></i>
+          </button>
+        </div>
+        <br>
+        <div id="seekbar">
+          <input type="range" oninput="setPos(this.value)" id="seek" value="0" max="">
+          <span id="duration">0:00&nbsp;&nbsp;&nbsp;&nbsp;</span>
+
+        </div>
+        <br>
+        <div class="volume_controls">
+          <button id="dad" onclick="mute()">
+            <ion-icon id="mute" name="volume-medium"></ion-icon>
+          </button>
+          <div class="m"></div>
+        </div>
+      </div>
+
+      <div id="playlist" class="hide">
+        <span class="text">Playlist</span>
+        <div class="list-container">
+
+          <div id="list" class="scrollbar"></div>
+
+          <div class="add-list">
+            <input id="sourceUrl" type="text" placeholder="Enter audio url" />
+            <button type="submit" id="addbtn" onclick="addList()">+</button>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="playlist-btn">
+        <button id="playlistbtn" onclick="togglePlaylist()">
+          <i id="playlist-btn" class="fa fa-list"></i>
+        </button>
+      </div>
+
+    </div>
+  </div>
+</body>
+<script>
+  var song = new Audio;
+  const seekbar = document.getElementById('seek');
+  const durationSpan = document.getElementById('duration');
+  var isStopped = true;
+  var currentSong = 0;
+  var playlist = [];
+  song.addEventListener('timeupdate', () => {
+    if (!isNaN(song.duration)) {
+      const currentTime = song.currentTime;
+      const remainingTime = song.duration - currentTime;
+      seekbar.max = song.duration;
+      const minutes = Math.floor(remainingTime / 60);
+      const seconds = Math.floor(remainingTime % 60).toString().padStart(2, '0');
+      durationSpan.textContent = `${minutes}:${seconds}`;
+    }
+  });
+
+
+
+  fetch('http://localhost:4000/list')
+    .then(function (response) {
+      return response.json();
+    })
+    .then(function (data) {
+      playlist.push(...data.map((ele) => ele.link));
+      data.forEach((file) => {
+        const fileUrl = file.link;
+        if (fileUrl !== "") {
+          const parent = document.getElementById('list');
+          const listItem = document.createElement('div');
+          listItem.setAttribute('class', 'list-item');
+
+          const wrapper = document.createElement('div');
+          wrapper.setAttribute('class', 'wrap-text');
+
+          const span = document.createElement('span');
+          span.innerHTML = fileUrl;
+
+          wrapper.appendChild(span);
+          listItem.appendChild(wrapper);
+
+          const btn = document.createElement('button');
+          btn.setAttribute('onclick', `removeList1(this, '${file._id}')`); // Pass the button element and the file ID
+          btn.innerHTML = '&times;';
+
+          listItem.appendChild(btn);
+          parent.appendChild(listItem);
+        }
+      });
+    })
+    .catch(function (error) {
+      console.error('Error retrieving data from DB:(', error);
+      alert("Error while fetching the songs.");  // Display error message
+    });
+
+
+
+  function removeList1(item, fileId) {
+    const fileUrl = item.parentElement.firstChild.innerText;
+    const index = playlist.indexOf(fileUrl);
+    if (index !== -1) {
+      playlist.splice(index, 1);
+      item.parentElement.remove();
+
+      fetch(`http://localhost:4000/del2/${fileId}`, {
+        method: 'DELETE'
+      })
+        .then(response => {
+          if (response.ok) {
+            console.log('Item deleted successfully from the database.');
+          } else {
+            console.error('Failed to delete item from the database.');
+          }
+        })
+        .catch(error => {
+          console.error('Error occurred while deleting item:', error);
+        });
+    }
+  }
+
+
+
+  function addList() {
+    const sourceUrl = document.getElementById('sourceUrl').value;
+    playlist.push(...playlist, sourceUrl)
+    console.log(sourceUrl);
+    const data = { link: sourceUrl };
+    fetch('http://localhost:4000/song', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(data)
+    })
+      .then(function (response) {
+        if (response.ok) {
+          return response.json();
+        } else {
+          throw new Error('Failed to add data');
+        }
+      })
+      .then(function (data) {
+        console.log('Data added successfully:', data);
+        const parent = document.getElementById('list');
+        const listItem = document.createElement('div');
+        listItem.setAttribute('class', 'list-item');
+
+        const wrapper = document.createElement('div');
+        wrapper.setAttribute('class', 'wrap-text');
+
+        const span = document.createElement('span');
+        span.innerHTML = sourceUrl;
+
+        wrapper.appendChild(span);
+        listItem.appendChild(wrapper);
+        setTimeout(function () {
+          var list = document.getElementById("list");
+          list.scrollTop = list.scrollHeight;
+        }, 100);
+
+        const btn = document.createElement('button');
+        btn.addEventListener('click', function () {
+          removeList2(this, data._Id); // Pass 'this' and data.songId to removeList()
+        });
+        btn.innerHTML = '&times;';
+
+        listItem.appendChild(btn);
+        parent.appendChild(listItem);
+        document.getElementById('sourceUrl').value = '';
+
+        console.log('Link added to the playlist:', sourceUrl);
+      })
+      .catch(function (error) {
+        console.error('Error adding data:', error);
+      });
+
+    function removeList2(item, fileId) {
+      console.log('Removing item:', fileId);
+      const fileUrl = item.parentElement.firstChild.innerText;
+      const index = playlist.indexOf(fileUrl);
+      if (index !== -1) {
+        playlist.splice(index, 1);
+        item.parentElement.remove();
+
+        // Make a DELETE request to the API to delete the item from the database
+        fetch(`http://localhost:4000/del1/${fileId}`, {
+          method: 'DELETE'
+        })
+          .then(response => {
+            if (response.ok) {
+              console.log('Item deleted successfully from the database.');
+            } else {
+              console.error('Failed to delete item from the database.');
+            }
+          })
+          .catch(error => {
+            console.error('Error occurred while deleting item:', error);
+          });
+      }
+    }
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+  var playlistVisible = false;
+
+
+
+  function skip(to) {
+    if (to == 'prev') {
+      stop();
+      currentSong = (--currentSong) % playlist.length;
+      if (currentSong < 0) {
+        currentSong += playlist.length;
+      }
+      playpause();
+    }
+    else if (to == 'next') {
+      stop();
+      currentSong = (++currentSong) % playlist.length;
+      playpause();
+    }
+  }
+
+  function playpause() {
+    var playIcon = document.getElementById("po").querySelector("i"); // Assuming the play/pause button has id "po" and the icon is represented by an <i> element
+
+    if (!song.paused) {
+      song.pause();
+      playIcon.classList.remove("fa-pause"); // Remove the pause icon class
+      playIcon.classList.add("fa-play"); // Add the play icon class
+
+      // Additional code to handle other elements or classes if needed
+
+      document.getElementById("glow").classList.add("disable-animation");
+    } else if (playlist.length == 0) {
+      togglePlaylist();
+    } else {
+      if (isStopped) {
+        song.src = playlist[currentSong];
+      }
+      song.play();
+      playIcon.classList.remove("fa-play"); // Remove the play icon class
+      playIcon.classList.add("fa-pause"); // Add the pause icon class
+
+      // Additional code to handle other elements or classes if needed
+
+      songFile = playlist[currentSong].split("/");
+      songName = document.getElementById("songName");
+      songName.innerHTML = songFile[songFile.length - 1];
+      document.getElementById("glow").classList.remove("disable-animation");
+      isStopped = false;
+    }
+  }
+
+
+  function stop() {
+    song.pause();
+    document.getElementById("glow").classList.add("disable-animation");
+    song.currentTime = 0;
+    document.getElementById("seek").value = 0;
+    isStopped = true;
+    document.getElementById("songName").innerHTML = "Get ready to rock !🎧";
+    var playIcon = document.getElementById("po").querySelector("i"); // Assuming the play/pause button has id "po" and the icon is represented by an <i> element
+    playIcon.classList.add("fa-play"); // Remove the play icon class
+
+
+  }
+
+  function setPos(pos) {
+    song.currentTime = pos;
+  }
+
+  function mute() {
+    if (song.muted) {
+      song.muted = false;
+      document.getElementById('dad').innerHTML = `<ion-icon name="volume-medium"></ion-icon>`;
+    }
+    else {
+      song.muted = true;
+      document.getElementById('dad').innerHTML = `<ion-icon name="volume-mute"></ion-icon>`;
+    }
+  }
+
+  function setVolume(volume) {
+    song.volume = volume;
+  }
+
+  function togglePlaylist() {
+    if (playlistVisible) {
+
+      document.getElementById('playlistbtn').innerHTML = `<i id="playlist-btn" class="fa fa-list"></i>`;
+      document.getElementById('playlist').className = "hide";
+      document.getElementById('player').className = "";
+      playlistVisible = false;
+    }
+    else {
+      document.getElementById('playlistbtn').innerHTML = `<i class="fa-solid fa-xmark"></i>`;
+      document.getElementById('player').className = "hide";
+      document.getElementById('playlist').className = "";
+      playlistVisible = true;
+    }
+  }
+
+  song.addEventListener('error', function () {
+    stop();
+    document.getElementById("songName").innerHTML = "Error Loading Audio";
+  });
+
+  song.addEventListener('timeupdate', function () {
+    const curtime = parseInt(song.currentTime, 10);
+    document.getElementById('seek').max = song.duration;
+    document.getElementById('seek').value = curtime;
+  });
+
+  song.addEventListener("ended", function () {
+    song.pause();
+    song.currentTime = 0;
+    document.getElementById('seek').value = 0;
+    if ((currentSong + 1) >= playlist.length) {
+      currentSong = 0;
+    } else {
+      currentSong++;
+    }
+    stop();
+    song.src = playlist[currentSong];
+    playpause();
+  });
+
+  var input = document.getElementById("sourceUrl");
+  input.addEventListener("keyup", function (event) {
+    if (event.keyCode === 13) {
+      event.preventDefault();
+      addList();
+    }
+  });
+
+  const newly = document.querySelector('#list');
+  newly.innerHTML = ''; // Clear the existing content of the newly element
+
+  playlist.forEach((element) => {
+    const listItem = document.createElement('div');
+    listItem.setAttribute('class', 'list-item');
+
+    const wrapper = document.createElement('div');
+    wrapper.setAttribute('class', 'wrap-text');
+
+    const span = document.createElement('span');
+    span.innerHTML = element;
+
+    wrapper.appendChild(span);
+    listItem.appendChild(wrapper);
+
+    const btn = document.createElement('button');
+    btn.setAttribute('onclick', 'removeList(this)');
+    btn.innerHTML = '&times;';
+
+    listItem.appendChild(btn);
+    newly.appendChild(listItem);
+  });
+  // addList();
+  document.getElementById("glow").classList.remove("disable-animation");
+
+
+
+</script>
+
+</html>
