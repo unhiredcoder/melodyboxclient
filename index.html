@@ -4,10 +4,12 @@
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Document</title>
+  <title>MelodyBox</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
   <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-storage.js"></script>
 </head>
 <style>
   * {
@@ -35,6 +37,12 @@
     display: flex;
     align-items: center;
     justify-content: center;
+  }
+
+  @media screen and (min-width:768px) {
+    .container {
+      zoom: 2;
+    }
   }
 
   .glow {
@@ -127,9 +135,11 @@
   }
 
   .list-item {
-    line-height: 30px;
-    height: 30px;
-    margin-top: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 35px;
+    width: 100%;
   }
 
 
@@ -141,7 +151,12 @@
   }
 
   .add-list {
-    padding: 4px 6px;
+    padding: 4px 7px;
+    display: flex;
+    margin: 0 auto;
+    align-items: center;
+    justify-content: center;
+
   }
 
   .wrap-text {
@@ -159,6 +174,7 @@
     border-radius: 47px;
     outline: none;
     color: white;
+    margin: 0 3px;
     height: 30px;
     width: 192px;
   }
@@ -176,15 +192,25 @@
   }
 
   .text1 {
+    height: 40px;
+    width: 100%;
+    font-size: 25px;
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    fill: transparent;
     font-weight: 900;
-    letter-spacing: 2px;
+    stroke-width: .5px;
     user-select: none;
-    -webkit-text-stroke: .2px;
-    -webkit-text-stroke-color: #00ff00;
-    margin-bottom: -10px;
-    font-size: 22px;
-    display: block;
+    stroke: #00ff00;
+    stroke-dasharray: 200;
+    animation: www 15s forwards infinite ease-in-out;
   }
+
+  @keyframes www {
+    50% {
+      stroke-dashoffset: 600;
+    }
+  }
+
 
   button {
     background: #000000;
@@ -198,6 +224,47 @@
     height: 30px;
     line-height: 30px;
     border-radius: 32px;
+  }
+
+  #audioUrl {
+    display: none;
+    background: #000000;
+    color: #ffffff;
+    background: linear-gradient(0deg, #000000, #262626);
+    font-size: 14px;
+    border: none;
+    outline: none;
+    width: 30px;
+    margin: 0 5px;
+    height: 30px;
+    line-height: 30px;
+    border-radius: 50%;
+
+  }
+
+  .file-upload-label {
+    background: #000000;
+    color: #ffffff;
+    background: linear-gradient(0deg, #000000, #262626);
+    border: none;
+    outline: none;
+    padding: 5px;
+    border-radius: 50%;
+
+  }
+
+  #addbtn {
+    background: #000000;
+    color: #ffffff;
+    font-size: 15px;
+    background: linear-gradient(0deg, #000000, #262626);
+    border: none;
+    display: flex;
+    align-items: center;
+    outline: none;
+    padding: 10px;
+    border-radius: 50%;
+
   }
 
   button:hover {
@@ -304,7 +371,10 @@
   <div class="container">
     <div id="glow" class="glow disable-animation">
       <div id="player">
-        <span class="text1">MelodyBox</span>
+        <svg class="text1">
+          <text x="50%" y="60%" text-anchor="middle">MelodyBox</text>
+        </svg>
+        <!-- <span class="text1"></span> -->
         <br>
         <span id="songName" class="text">Get ready to rock !🎧
         </span>
@@ -341,12 +411,15 @@
       <div id="playlist" class="hide">
         <span class="text">Playlist</span>
         <div class="list-container">
-
           <div id="list" class="scrollbar"></div>
-
           <div class="add-list">
+            <label for="audioUrl" class="file-upload-label">
+              <img id="load" style="display: none;" src="./Reload-1s-200px.svg" height="15px" alt="">
+              <ion-icon id="cloud" name="cloud-upload-outline"></ion-icon>
+            </label>
+            <input type="file" name="audio" onchange="uploadFile()" id="audioUrl">
             <input id="sourceUrl" type="text" placeholder="Enter audio url" />
-            <button type="submit" id="addbtn" onclick="addList()">+</button>
+            <button type="submit" id="addbtn" onclick="addByLink()">+</button>
           </div>
 
         </div>
@@ -380,147 +453,124 @@
   });
 
 
+  const API_URL = "https://melodybox2.vercel.app"
+  // const API_URL="http://localhost:5001"
 
-  fetch('https://melodybox2.vercel.app/list')
-    .then(function (response) {
-      return response.json();
-    })
-    .then(function (data) {
-      playlist.push(...data.map((ele) => ele.link));
-      data.forEach((file) => {
-        const fileUrl = file.link;
-        if (fileUrl !== "") {
-          const parent = document.getElementById('list');
-          const listItem = document.createElement('div');
-          listItem.setAttribute('class', 'list-item');
-
-          const wrapper = document.createElement('div');
-          wrapper.setAttribute('class', 'wrap-text');
-
-          const span = document.createElement('span');
-          span.innerHTML = fileUrl;
-
-          wrapper.appendChild(span);
-          listItem.appendChild(wrapper);
-
-          const btn = document.createElement('button');
-          btn.setAttribute('onclick', `removeList1(this, '${file._id}')`); // Pass the button element and the file ID
-          btn.innerHTML = '&times;';
-
-          listItem.appendChild(btn);
-          parent.appendChild(listItem);
-        }
+  // Function to fetch songs from the API
+  function fetchSongs() {
+    fetch(`${API_URL}/list`)
+      .then(response => response.json())
+      .then(data => {
+        const songs = data.songs;
+        // console.log(songs);
+        songs.forEach(song => {
+          playlist.push(song);
+        });
+        renderPlaylist(); // Call the renderPlaylist function after fetching songs
+      })
+      .catch(error => {
+        console.log('Error:', error);
       });
-    })
-    .catch(function (error) {
-      console.error('Error retrieving data from DB:(', error);
-      alert("Error while fetching the songs.");  // Display error message
+  }
+
+  fetchSongs(); // Call the fetchSongs function to fetch and render the songs at starting
+
+
+
+  // Call this function after adding a new link to the playlist
+  function scrollToBottom() {
+    setTimeout(function () {
+      var list = document.getElementById("list");
+      list.scrollTop = list.scrollHeight;
+    }, 100);
+  }
+
+
+
+  // Function to extract the song name from the URL
+  function extractSongName(url) {
+    const parts = url.split('/');
+    const fileNameWithParams = parts[parts.length - 1];
+    const songName = fileNameWithParams.split('?')[0]; // Extract the file name before the query string
+    return songName;
+  }
+
+
+
+
+  // Function to render the entire playlist array
+  // Function to render the entire playlist array
+  function renderPlaylist() {
+    const listContainer = document.getElementById('list');
+    listContainer.innerHTML = ''; // Clear the existing list
+
+    playlist.forEach(song => {
+      const listItem = document.createElement('div');
+      listItem.classList.add('list-item');
+      // Extract the song name from the URL
+      const songName = extractSongName(song.link);
+      listItem.innerHTML = `
+      <div class="wrap-text">
+        <span>${songName}</span>
+      </div>
+      <button onclick="removeListItem('${song._id}','${song.link}', this.parentElement)">&times;</button>
+    `;
+
+      listContainer.appendChild(listItem);
     });
+    scrollToBottom()
+  }
 
 
 
-  function removeList1(item, fileId) {
-    const fileUrl = item.parentElement.firstChild.innerText;
-    const index = playlist.indexOf(fileUrl);
-    if (index !== -1) {
-      playlist.splice(index, 1);
-      item.parentElement.remove();
-
-      fetch(`https://melodybox2.vercel.app/del2/${fileId}`, {
+  function removeListItem(songId, songUrl, listItemElement) {
+    if (songUrl.startsWith('https://firebasestorage.googleapis.com/')) // Song added by URL, no need to delete from Firebase Storage
+    {
+      // Song added by file, delete both song and audio file
+      fetch(`${API_URL}/song/${songId}`, {
         method: 'DELETE'
       })
         .then(response => {
           if (response.ok) {
-            console.log('Item deleted successfully from the database.');
+            // Delete the audio file from Firebase Storage
+            const storageRef = storage.refFromURL(songUrl);
+            storageRef.delete()
+              .then(() => {
+                // Remove the list item from the UI
+                listItemElement.remove();
+                // Remove the song from the playlist array
+                playlist = playlist.filter(song => song._id !== songId);
+                console.log('Audio file deleted successfully from Storage DB');
+              })
+              .catch(error => {
+                console.error('Error deleting audio file:', error);
+              });
           } else {
-            console.error('Failed to delete item from the database.');
+            throw new Error('Failed to delete the song');
           }
         })
         .catch(error => {
-          console.error('Error occurred while deleting item:', error);
+          console.error('Error:', error);
         });
-    }
-  }
 
-
-
-  function addList() {
-    const sourceUrl = document.getElementById('sourceUrl').value;
-    playlist.push(...playlist, sourceUrl)
-    console.log(sourceUrl);
-    const data = { link: sourceUrl };
-    fetch('https://melodybox2.vercel.app/song', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(data)
-    })
-      .then(function (response) {
-        if (response.ok) {
-          return response.json();
-        } else {
-          throw new Error('Failed to add data');
-        }
+    } else {
+      fetch(`${API_URL}/song/${songId}`, {
+        method: 'DELETE'
       })
-      .then(function (data) {
-        console.log('Data added successfully:', data);
-        const parent = document.getElementById('list');
-        const listItem = document.createElement('div');
-        listItem.setAttribute('class', 'list-item');
-
-        const wrapper = document.createElement('div');
-        wrapper.setAttribute('class', 'wrap-text');
-
-        const span = document.createElement('span');
-        span.innerHTML = sourceUrl;
-
-        wrapper.appendChild(span);
-        listItem.appendChild(wrapper);
-        setTimeout(function () {
-          var list = document.getElementById("list");
-          list.scrollTop = list.scrollHeight;
-        }, 100);
-
-        const btn = document.createElement('button');
-        btn.addEventListener('click', function () {
-          removeList2(this, data._Id); // Pass 'this' and data.songId to removeList()
-        });
-        btn.innerHTML = '&times;';
-
-        listItem.appendChild(btn);
-        parent.appendChild(listItem);
-        document.getElementById('sourceUrl').value = '';
-
-        console.log('Link added to the playlist:', sourceUrl);
-      })
-      .catch(function (error) {
-        console.error('Error adding data:', error);
-      });
-
-    function removeList2(item, fileId) {
-      console.log('Removing item:', fileId);
-      const fileUrl = item.parentElement.firstChild.innerText;
-      const index = playlist.indexOf(fileUrl);
-      if (index !== -1) {
-        playlist.splice(index, 1);
-        item.parentElement.remove();
-
-        // Make a DELETE request to the API to delete the item from the database
-        fetch(`https://melodybox2.vercel.app/del1/${fileId}`, {
-          method: 'DELETE'
+        .then(response => {
+          if (response.ok) {
+            // Remove the list item from the UI
+            listItemElement.remove();
+            // Remove the song from the playlist array    [very imp]
+            playlist = playlist.filter(song => song._id !== songId);
+            console.log('Song deleted successfully from Normal Database.');
+          } else {
+            throw new Error('Failed to delete the song');
+          }
         })
-          .then(response => {
-            if (response.ok) {
-              console.log('Item deleted successfully from the database.');
-            } else {
-              console.error('Failed to delete item from the database.');
-            }
-          })
-          .catch(error => {
-            console.error('Error occurred while deleting item:', error);
-          });
-      }
+        .catch(error => {
+          console.error('Error:', error);
+        });
     }
   }
 
@@ -528,6 +578,124 @@
 
 
 
+
+
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBQXh_oxolHYSlYpJmlg9GM_3ZzzJI4YeI",
+    authDomain: "melodybox-be97c.firebaseapp.com",
+    projectId: "melodybox-be97c",
+    storageBucket: "melodybox-be97c.appspot.com",
+    messagingSenderId: "904537579157",
+    appId: "1:904537579157:web:1dc6c0669ce4776ff1c59c"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+
+  const storage = firebase.storage();
+
+  function uploadFile() {
+    const audioUrlInput = document.getElementById('audioUrl');
+    const audioFile = audioUrlInput.files[0];
+
+    if (audioFile) {
+      // File type validation
+      if (!audioFile.type.includes('audio')) {
+        alert('Please select an audio file');
+        return;
+      }
+
+      cloud.style.display = 'none'; // Show the loading spinner
+      audioUrl.disabled = true;
+      load.style.display = 'inline-block'; // Show the loading spinner
+
+      const storageRef = storage.ref();
+      const fileRef = storageRef.child(audioFile.name);
+
+      fileRef.put(audioFile)
+        .then(snapshot => snapshot.ref.getDownloadURL())
+        .then(downloadURL => {
+          const audiodata = {
+            link: downloadURL
+          };
+
+          if (isSongAlreadyAdded(audiodata)) {
+            alert('Song already added');
+            return;
+          }
+
+          // Send the song data to the backend for uploading
+          fetch(`${API_URL}/song/upload`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(audiodata)
+          })
+            .then(response => response.json())
+            .then(data => {
+              // Handle the uploaded song data if needed
+              const maindata = data.song;
+              playlist.push(maindata);
+              renderPlaylist();
+            })
+            .catch(error => {
+              console.log('Error:', error);
+            });
+        })
+        .finally(() => {
+          load.style.display = 'none'; // Hide the loading spinner
+          cloud.style.display = 'block'; // Show the cloud icon
+          audioUrl.disabled = false;
+        })
+        .catch(error => {
+          console.log('Error:', error);
+        });
+    }
+  }
+
+
+
+  function addByLink() {
+    const sourceUrlInput = document.getElementById('sourceUrl');
+    const sourceUrl = sourceUrlInput.value.trim();
+
+    if (sourceUrl !== '') {
+      const audiodata = {
+        link: sourceUrl
+      };
+
+      if (isSongAlreadyAdded(audiodata)) {
+        alert('Song already added');
+        return;
+      }
+      fetch(`${API_URL}/song/upload`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(audiodata)
+      })
+        .then(response => response.json())
+        .then(data => {
+          // Handle the uploaded song data 
+          playlist.push(data.song);
+          sourceUrlInput.value = ""
+          renderPlaylist(); //Update the UI with the uploaded song 
+        })
+        .catch(error => {
+          console.log('Error:', error);
+        });
+    } else {
+      alert('Please enter a valid song link');
+    }
+  }
+
+  function isSongAlreadyAdded(song) {
+    const uploadedSongName = extractSongName(song.link); // Get the name of the uploaded song
+    const displayedSongNames = playlist.map(item => extractSongName(item.link)); // Get an array of song names already displayed in the UI
+    return displayedSongNames.includes(uploadedSongName); // Check if the uploaded song name is already in the displayed song names array
+  }
 
 
 
@@ -556,35 +724,33 @@
   }
 
   function playpause() {
-    var playIcon = document.getElementById("po").querySelector("i"); // Assuming the play/pause button has id "po" and the icon is represented by an <i> element
+    var playIcon = document.getElementById("po").querySelector("i");
+    var songNameElement = document.getElementById("songName");
 
     if (!song.paused) {
       song.pause();
-      playIcon.classList.remove("fa-pause"); // Remove the pause icon class
-      playIcon.classList.add("fa-play"); // Add the play icon class
-
-      // Additional code to handle other elements or classes if needed
-
+      playIcon.classList.remove("fa-pause");
+      playIcon.classList.add("fa-play");
       document.getElementById("glow").classList.add("disable-animation");
     } else if (playlist.length == 0) {
       togglePlaylist();
     } else {
       if (isStopped) {
-        song.src = playlist[currentSong];
+        song.src = playlist[currentSong].link;
       }
       song.play();
-      playIcon.classList.remove("fa-play"); // Remove the play icon class
-      playIcon.classList.add("fa-pause"); // Add the pause icon class
+      playIcon.classList.remove("fa-play");
+      playIcon.classList.add("fa-pause");
 
-      // Additional code to handle other elements or classes if needed
-
-      songFile = playlist[currentSong].split("/");
-      songName = document.getElementById("songName");
-      songName.innerHTML = songFile[songFile.length - 1];
+      var songFile = playlist[currentSong].link;
+      var songFileName = extractSongName(songFile); // Use the function extractSongName to get the song file name
+      songNameElement.innerHTML = songFileName;
       document.getElementById("glow").classList.remove("disable-animation");
       isStopped = false;
+
     }
   }
+
 
 
   function stop() {
@@ -664,37 +830,9 @@
   input.addEventListener("keyup", function (event) {
     if (event.keyCode === 13) {
       event.preventDefault();
-      addList();
+      addByLink();
     }
   });
-
-  const newly = document.querySelector('#list');
-  newly.innerHTML = ''; // Clear the existing content of the newly element
-
-  playlist.forEach((element) => {
-    const listItem = document.createElement('div');
-    listItem.setAttribute('class', 'list-item');
-
-    const wrapper = document.createElement('div');
-    wrapper.setAttribute('class', 'wrap-text');
-
-    const span = document.createElement('span');
-    span.innerHTML = element;
-
-    wrapper.appendChild(span);
-    listItem.appendChild(wrapper);
-
-    const btn = document.createElement('button');
-    btn.setAttribute('onclick', 'removeList(this)');
-    btn.innerHTML = '&times;';
-
-    listItem.appendChild(btn);
-    newly.appendChild(listItem);
-  });
-  // addList();
-  document.getElementById("glow").classList.remove("disable-animation");
-
-
 
 </script>
 
